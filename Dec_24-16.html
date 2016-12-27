@@ -1,9 +1,15 @@
 <!doctype html>
 <html>
 <head>
+	<meta charset="utf-8">
+	<title>Clock</title>
+	<style>
+		body { background: none repeat scroll 0 0 #dedede; font-family:Orgitron, Arial,sans-serif;margin : 0; padding: 0; }
+		#content { position: fixed; top: 50%; left:50%; transform: translate(-50%, -50%);}
+		#clock { font-size: 100px; }
 
+	</style>	
 </head>
-
 <body>
 	<div id="content">
 		<div id="clock">
@@ -22,33 +28,51 @@
 			console.log("hello chapter 1");
 			
 			var clock = createClock("clock");
-			var clock2 = createClock("clock2");
+			var clock = new Clock("clock");
+			var clock2 = new Clock("clock2",-360, "central");
 		}
 		
-		function createClock(id) {
-			var c = new Object();
-			c.updateClock = function() {
-				let date = new Date();
-		
-				let clock = document.getElementById(id);
-		
-				clock.innerHTML = this.formatDigits(date.getHours()) + ":" + this.formatDigits(date.getMinutes()) 
-				+ ":" + this.formatDigits(date.getSeconds());
-			};
-			
-			c.formatDigits = function(val) {
-				if ( val < 10 ) {
-					val = "0" + val;
-				}
-			
-				return val;
-			};
-			
-			setInterval(function(){c.updateClock();}, 1000);
-			c.updateClock();
-			
-			return c;
+		Date.prototype.updateSeconds = function() {
+			this.setSeconds(this.getSeconds() + 1);
 		}
+
+		Date.prototype.autoClock = function(isAuto) {
+			clearInterval(this.clockInterval);
+			if (isAuto) {
+				var that = this;
+				this.clockInterval = setInterval(function(){that.updateSeconds()}, 1000)
+			}
+		}
+
+		function Clock(id,offset = 0, label = "") {
+			var d = new Date();
+			var offset = (offset + d.getTimezoneOffset())*60*1000;
+			this.d = new Date(offset+d.getTime());
+			this.d.autoClock(true);
+			this.id = id;
+			this.label = label;
+
+			var that = this;
+			setInterval(function(){
+				that.updateClock();
+			}, 1000);
+			this.updateClock();
+		}
+
+		Clock.prototype.updateClock = function() {
+			let date = this.d;
+			let clock = document.getElementById(this.id);
+			clock.innerHTML = this.formatDigits(date.getHours()) + ":" + this.formatDigits(date.getMinutes()) 
+			+ ":" + this.formatDigits(date.getSeconds() + " " + this.label);
+		};
+			
+		Clock.prototype.formatDigits = function(val) {
+			if ( val < 10 ) {
+				val = "0" + val;
+			}
+		
+			return val;
+		};
 		
 </script>
 
