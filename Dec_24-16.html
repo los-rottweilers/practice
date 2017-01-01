@@ -7,6 +7,7 @@
 		body { background: none repeat scroll 0 0 #dedede; font-family:Orgitron, Arial,sans-serif;margin : 0; padding: 0; }
 		#content { position: fixed; top: 50%; left:50%; transform: translate(-50%, -50%);}
 		#clock { font-size: 100px; }
+		
 
 	</style>	
 </head>
@@ -23,15 +24,40 @@
 	
 	<script>
 		window.onload = onReady;
-	
+		
+		var com = com || {};
+			com.cervantes = com.cervantes || {};
+
+		
+
 		function onReady() {
 			console.log("hello chapter 1");
 			
-			var clock = new Clock("clock");
-			var clock2 = new Clock("clock2",-360, "central");
+			var clock = new com.cervantes.Clock("clock");
+			//var clock3 = new com.cervantes.TextClock("clock");
+			var clock2 = new com.cervantes.TextClock("clock2",-360, "central");
+			
+			LiveDate.apply(clock,[1,2,3]);
 		}
 		
+		function LiveDate(a,b,c) {
+			console.log(this,a,b,c);
+		}
+
+		Date.__interval = 0;
+		Date.__aDates = [];
+		Date.addToInterval = function(date) {
+			this.__aDates.push(date);
+
+			if(Date.__interval) {
+				Date.__interval = setInterval(function(){
+					Date.updateDates()
+				},1000);
+			}
+		}
+
 		Date.prototype.updateSeconds = function() {
+			Date.addToInterval();
 			this.setSeconds(this.getSeconds() + 1);
 		}
 
@@ -43,7 +69,7 @@
 			}
 		}
 
-		function Clock(id,offset = 0, label = "") {
+		com.cervantes.Clock = function (id,offset = 0, label = "") {
 			var d = new Date();
 			var offset = (offset + d.getTimezoneOffset())*60*1000;
 			this.d = new Date(offset+d.getTime());
@@ -58,21 +84,30 @@
 			this.updateClock();
 		}
 
-		Clock.prototype.updateClock = function() {
+		com.cervantes.Clock.prototype.updateClock = function() {
 			let date = this.d;
 			let clock = document.getElementById(this.id);
 			clock.innerHTML = this.formatDigits(date.getHours()) + ":" + this.formatDigits(date.getMinutes()) 
 			+ ":" + this.formatDigits(date.getSeconds() + " " + this.label);
 		};
 			
-		Clock.prototype.formatDigits = function(val) {
+		com.cervantes.Clock.prototype.formatDigits = function(val) {
 			if ( val < 10 ) {
 				val = "0" + val;
 			}
 		
 			return val;
 		};
-		
+
+		com.cervantes.Clock.prototype.version = "1.00";
+
+		com.cervantes.TextClock = function(id, offset, label) {
+			com.cervantes.Clock.apply(this, arguments);
+		}
+
+		com.cervantes.TextClock.prototype = Object.create(com.cervantes.Clock.prototype);
+		com.cervantes.TextClock.prototype.constructor = com.cervantes.TextClock;
+
 </script>
 
 </body>
